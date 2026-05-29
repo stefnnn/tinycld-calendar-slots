@@ -1,0 +1,36 @@
+{
+    "name": "@tinycld/calendar-slots",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "description": "Let users book a slot on your calendar",
+    "exports": {
+        "./package.json": "./package.json",
+        "./manifest": "./manifest.ts",
+        "./types": "./tinycld/calendar-slots/types.ts",
+        "./collections": "./tinycld/calendar-slots/collections.ts",
+        "./screens/*": "./tinycld/calendar-slots/screens/*.tsx",
+        "./seed": "./tinycld/calendar-slots/seed.ts",
+        "./sidebar": "./tinycld/calendar-slots/sidebar.tsx",
+        "./provider": "./tinycld/calendar-slots/provider.tsx",
+        "./hooks/*": "./tinycld/calendar-slots/hooks/*.ts",
+        "./components/*": "./tinycld/calendar-slots/components/*.tsx"
+    },
+    "scripts": {
+        "typecheck": "tinycld-pkg typecheck",
+        "test": "tinycld-pkg test",
+        "test:e2e": "tinycld-pkg test:e2e",
+        "check": "tinycld-pkg check"
+    },
+    "devDependencies": {
+        "@tinycld/package-scripts": "*"
+    },
+    "peerDependencies": {
+        "react": ">=19",
+        "react-native": ">=0.83",
+        "expo-router": ">=55.0.0",
+        "pbtsdb": ">=0.5",
+        "@tanstack/react-db": ">=0.1",
+        "@tanstack/db": ">=0.6"
+    }
+}
