@@ -1,11 +1,55 @@
 # calendar-slots
 
-Let users book a slot on your calendar
+**https://github.com/stefnnn/tinycld-calendar-slots**
+
+Let users book a slot on your calendar.
 
 A feature package for the [tinycld](https://tinycld.org/) ecosystem. It lives in
 its own git repo and is developed as a **workspace member** alongside the app
 shell (`app`), `@tinycld/core` (its own standalone repo, cloned as a sibling —
 not bundled), and the other feature packages.
+
+## Features
+
+**Booking pages** — create one or more public booking pages, each with a name, URL slug, and optional intro text. Each page gets a shareable link that works without login.
+
+![Booking pages overview](images/booking-pages-overview.png)
+
+**Appointment types** — define multiple appointment types per page, each with its own duration and padding time. Padding is enforced symmetrically: a 30-minute slot with 15-minute padding requires 15 minutes of clear time both before and after on the owner's calendar.
+
+![Booking page editor](images/booking-page-edit.png)
+
+**Availability windows & booking rules** — set per-day availability windows (e.g. Mon 10:00–14:00, Tue 10:00–18:00). Booking rules let you configure:
+
+- **Minimum notice** — how far in advance a slot must be booked (none, 1h, 2h, … 3d)
+- **Booking window** — infinite, rolling N days, or a specific date range
+- **Max bookings** — cap the number of bookings per day, week, or month
+
+![Availability and booking rules](images/booking-page-rules.png)
+
+**Public booking page** — guests visit the page, pick an appointment type, select a time slot, enter their name and email, and confirm. The slot is checked against the owner's existing calendar events in real time; only genuinely free slots are shown. On confirmation, a calendar event is created on the owner's calendar with the guest added.
+
+![Public booking page](images/public-booking-page.png)
+
+## Installation
+
+Clone this repo as a member of your tinycld workspace, then reinstall at the workspace root so the generator picks it up:
+
+```sh
+cd ~/code/tinycld
+git clone git@github.com:stefnnn/tinycld-calendar-slots.git
+npm install          # re-links members and re-runs the generator
+```
+
+Or bootstrap a fresh workspace with this package included from the start:
+
+```sh
+npx @tinycld/bootstrap@latest --tooling --with calendar-slots
+npm install
+cd app && npm run dev
+```
+
+To remove the package, delete its directory and run `npm install` again at the workspace root.
 
 ## Development
 
@@ -15,7 +59,7 @@ linked by a single `npm install` at the root.
 
 ```sh
 # In a fresh workspace directory, clone this package into a member slot…
-git clone git@github.com:tinycld/calendar-slots.git
+git clone git@github.com:stefnnn/tinycld-calendar-slots.git
 
 # …then pull in the rest of the workspace tooling (app + core + the root
 # package.json / lockfile). bootstrap --tooling skips dirs that already exist.

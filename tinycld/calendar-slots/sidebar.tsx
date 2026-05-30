@@ -1,20 +1,58 @@
+import {
+    SidebarActionButton,
+    SidebarItem,
+    SidebarNav,
+} from '@tinycld/core/components/sidebar-primitives'
+import { useOrgHref } from '@tinycld/core/lib/org-routes'
+import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
-import { Text, View } from 'react-native'
-
-// Sidebar for the Calendar Slots package. Rendered in the workspace drawer
-// when a user is on any /a/<orgSlug>/calendar-slots/... route.
-//
-// Replace with real navigation (folders, favorites, filters, etc). See
-// @tinycld/calendar or @tinycld/mail sidebars for richer examples.
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
+import { usePathname, useRouter } from 'expo-router'
+import { CalendarPlus2 } from 'lucide-react-native'
 
 export default function CalendarSlotsSidebar() {
-    const fg = useThemeColor('foreground')
+    const router = useRouter()
+    const pathname = usePathname()
+    const orgHref = useOrgHref()
     const muted = useThemeColor('muted-foreground')
+    const [pagesCollection] = useStore('booking_pages')
+
+    const { data: pages } = useOrgLiveQuery(
+        (query, _org) => query.from({ p: pagesCollection }),
+        []
+    )
+
+    const isAllPagesActive =
+        pathname.endsWith('/calendar-slots') || pathname.endsWith('/calendar-slots/')
 
     return (
-        <View className="p-3 gap-2">
-            <Text style={{ color: fg, fontSize: 14, fontWeight: '600' }}>Calendar Slots</Text>
-            <Text style={{ color: muted, fontSize: 12 }}>Replace this with your package's sidebar nav.</Text>
-        </View>
+        <SidebarNav>
+            <SidebarActionButton
+                label="+ New Booking Page"
+                onPress={() => router.push(orgHref('calendar-slots/[id]', { id: 'new' }))}
+            />
+
+            <SidebarItem
+                label="All Pages"
+                icon={CalendarPlus2}
+                badge={pages?.length || undefined}
+                isActive={isAllPagesActive}
+                closesDrawer
+                onPress={() => router.push(orgHref('calendar-slots'))}
+            />
+
+            {pages?.map(page => (
+                <SidebarItem
+                    key={page.id}
+                    label={page.name}
+                    colorDot={page.active ? '#22c55e' : `${muted}80`}
+                    isActive={pathname.endsWith(`/calendar-slots/${page.id}`)}
+                    closesDrawer
+                    onPress={() =>
+                        router.push(orgHref('calendar-slots/[id]', { id: page.id }))
+                    }
+                />
+            ))}
+        </SidebarNav>
     )
 }

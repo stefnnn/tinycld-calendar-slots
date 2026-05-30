@@ -10,6 +10,7 @@
         "./types": "./tinycld/calendar-slots/types.ts",
         "./collections": "./tinycld/calendar-slots/collections.ts",
         "./screens/*": "./tinycld/calendar-slots/screens/*.tsx",
+        "./public-screens/*": "./tinycld/calendar-slots/public-screens/*.tsx",
         "./seed": "./tinycld/calendar-slots/seed.ts",
         "./sidebar": "./tinycld/calendar-slots/sidebar.tsx",
         "./provider": "./tinycld/calendar-slots/provider.tsx",
