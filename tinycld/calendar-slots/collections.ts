@@ -2,9 +2,9 @@ import type { CoreStores } from '@tinycld/core/lib/pocketbase'
 import type { Schema } from '@tinycld/core/types/pbSchema'
 import type { createCollection } from 'pbtsdb/core'
 import { BasicIndex } from 'pbtsdb/core'
-import type { BookingSlotsSchema } from './types'
+import type { CalendarSlotsSchema } from './types'
 
-type MergedSchema = Schema & BookingSlotsSchema
+type MergedSchema = Schema & CalendarSlotsSchema
 
 export function registerCollections(
     newCollection: ReturnType<typeof createCollection<MergedSchema>>,

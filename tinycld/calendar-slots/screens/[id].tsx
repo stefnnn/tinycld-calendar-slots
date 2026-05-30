@@ -91,6 +91,13 @@ export default function BookingPageEdit() {
                     ...data,
                     org: orgId,
                     owner: userOrg.id,
+                    min_notice_hours: 0,
+                    booking_window: '',
+                    booking_rolling_days: 0,
+                    booking_date_from: '',
+                    booking_date_to: '',
+                    max_bookings_count: 0,
+                    max_bookings_period: '',
                 })
             } else {
                 yield pagesCollection.update(id!, (draft) => {

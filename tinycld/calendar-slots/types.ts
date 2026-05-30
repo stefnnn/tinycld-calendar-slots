@@ -55,7 +55,7 @@ export interface Bookings {
     updated: string
 }
 
-export type BookingSlotsSchema = {
+export type CalendarSlotsSchema = {
     booking_pages: {
         type: BookingPages
         relations: {

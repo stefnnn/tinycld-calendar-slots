@@ -96,6 +96,11 @@ jobs:
       - name: Copy assets
         working-directory: ws/app
         run: npm run assets:copy-pdfjs
+      # Pre-build the PocketBase binary so Go module downloads don't happen
+      # inside the PocketBase startup timeout during the test run.
+      - name: Build PocketBase
+        working-directory: ws/app/server
+        run: go build -o app .
       - name: Install Playwright browsers
         working-directory: ws/app
         run: npx playwright install --with-deps chromium
