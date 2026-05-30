@@ -36,7 +36,20 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      # 3. Clone app + core (the PR's PACKAGE is already checked out into its
+      # 3. Register this package as a workspace member (tinycld/workspace may not
+      #    list external packages; the member dir is already present from step 2).
+      - name: Register package in workspace
+        working-directory: ws
+        run: |
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (!p.workspaces.includes('${{ env.PACKAGE }}')) {
+              p.workspaces.push('${{ env.PACKAGE }}');
+              fs.writeFileSync('package.json', JSON.stringify(p, null, 4) + '\n');
+            }
+          "
+      # 4. Clone app + core (the PR's PACKAGE is already checked out into its
       #    slot; bootstrap --tooling skips dirs that already exist). A sibling
       #    only needs app + core + itself to typecheck + unit-test.
       - name: Assemble workspace (app + core)
@@ -69,6 +82,17 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
+      - name: Register package in workspace
+        working-directory: ws
+        run: |
+          node -e "
+            const fs = require('fs');
+            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            if (!p.workspaces.includes('${{ env.PACKAGE }}')) {
+              p.workspaces.push('${{ env.PACKAGE }}');
+              fs.writeFileSync('package.json', JSON.stringify(p, null, 4) + '\n');
+            }
+          "
       - name: Assemble workspace (app + core)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --tooling
