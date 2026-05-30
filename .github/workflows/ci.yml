@@ -36,28 +36,27 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      # 3. Register this package as a workspace member (tinycld/workspace may not
-      #    list external packages; the member dir is already present from step 2).
-      - name: Register package in workspace
-        working-directory: ws
-        run: |
-          node -e "
-            const fs = require('fs');
-            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            if (!p.workspaces.includes('${{ env.PACKAGE }}')) {
-              p.workspaces.push('${{ env.PACKAGE }}');
-              fs.writeFileSync('package.json', JSON.stringify(p, null, 4) + '\n');
-            }
-          "
-      # 4. Clone app + core (the PR's PACKAGE is already checked out into its
-      #    slot; bootstrap --tooling skips dirs that already exist). A sibling
-      #    only needs app + core + itself to typecheck + unit-test.
+      # 3. Clone app + core (bootstrap --tooling skips dirs that already exist).
       - name: Assemble workspace (app + core)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --tooling
-      - name: Install (workspace root)
+      # 4. Install without running postinstall so we can link the package first.
+      #    The workspace package-lock.json predates this external package, so npm
+      #    won't create its node_modules symlink before the generator runs.
+      - name: Install (workspace root, skip scripts)
         working-directory: ws
-        run: npm install
+        run: npm install --ignore-scripts
+      # 5. Symlink the package so the generator can resolve it via node_modules.
+      - name: Link package into node_modules
+        working-directory: ws
+        run: mkdir -p node_modules/@tinycld && ln -sf "$(realpath ${{ env.PACKAGE }})" node_modules/@tinycld/${{ env.PACKAGE }}
+      # 6. Run the postinstall steps manually now that the symlink exists.
+      - name: Generate packages
+        working-directory: ws/app
+        run: npm run packages:generate
+      - name: Copy assets
+        working-directory: ws/app
+        run: npm run assets:copy-pdfjs
       - name: Typecheck + unit
         working-directory: ws/${{ env.PACKAGE }}
         run: npx tinycld-pkg check
@@ -82,23 +81,21 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      - name: Register package in workspace
-        working-directory: ws
-        run: |
-          node -e "
-            const fs = require('fs');
-            const p = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-            if (!p.workspaces.includes('${{ env.PACKAGE }}')) {
-              p.workspaces.push('${{ env.PACKAGE }}');
-              fs.writeFileSync('package.json', JSON.stringify(p, null, 4) + '\n');
-            }
-          "
       - name: Assemble workspace (app + core)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --tooling
-      - name: Install (workspace root)
+      - name: Install (workspace root, skip scripts)
         working-directory: ws
-        run: npm install
+        run: npm install --ignore-scripts
+      - name: Link package into node_modules
+        working-directory: ws
+        run: mkdir -p node_modules/@tinycld && ln -sf "$(realpath ${{ env.PACKAGE }})" node_modules/@tinycld/${{ env.PACKAGE }}
+      - name: Generate packages
+        working-directory: ws/app
+        run: npm run packages:generate
+      - name: Copy assets
+        working-directory: ws/app
+        run: npm run assets:copy-pdfjs
       - name: Install Playwright browsers
         working-directory: ws/app
         run: npx playwright install --with-deps chromium
