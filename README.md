@@ -13,11 +13,11 @@ not bundled), and the other feature packages.
 
 **Booking pages** — create one or more public booking pages, each with a name, URL slug, and optional intro text. Each page gets a shareable link that works without login.
 
-![Booking pages overview](images/booking-pages-overview.png)
+<img src="images/booking-pages-overview.png" width="500px" alt="Booking pages overview">
 
 **Appointment types** — define multiple appointment types per page, each with its own duration and padding time. Padding is enforced symmetrically: a 30-minute slot with 15-minute padding requires 15 minutes of clear time both before and after on the owner's calendar.
 
-![Booking page editor](images/booking-page-edit.png)
+<img src="images/booking-page-edit.png" width="360px" alt="Booking pages editor">
 
 **Availability windows & booking rules** — set per-day availability windows (e.g. Mon 10:00–14:00, Tue 10:00–18:00). Booking rules let you configure:
 
@@ -25,11 +25,11 @@ not bundled), and the other feature packages.
 - **Booking window** — infinite, rolling N days, or a specific date range
 - **Max bookings** — cap the number of bookings per day, week, or month
 
-![Availability and booking rules](images/booking-page-rules.png)
+<img src="images/booking-page-rules.png" width="360px" alt="Availability and booking rules">
 
 **Public booking page** — guests visit the page, pick an appointment type, select a time slot, enter their name and email, and confirm. The slot is checked against the owner's existing calendar events in real time; only genuinely free slots are shown. On confirmation, a calendar event is created on the owner's calendar with the guest added.
 
-![Public booking page](images/public-booking-page.png)
+<img src="images/public-booking-page.png" width="500px" alt="Public booking page">
 
 ## Installation
 
