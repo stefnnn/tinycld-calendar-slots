@@ -74,7 +74,7 @@ export function BookingRulesEditor({ pageId, page }: BookingRulesEditorProps) {
                 draft.booking_date_from = rules.bookingDateFrom
                 draft.booking_date_to = rules.bookingDateTo
                 draft.max_bookings_count = rules.maxBookingsCount
-                draft.max_bookings_period = rules.maxBookingsPeriod
+                draft.max_bookings_period = rules.maxBookingsPeriod as any
             })
         }),
         onSuccess: () => {

@@ -15,7 +15,9 @@
         "./sidebar": "./tinycld/calendar-slots/sidebar.tsx",
         "./provider": "./tinycld/calendar-slots/provider.tsx",
         "./hooks/*": "./tinycld/calendar-slots/hooks/*.ts",
-        "./components/*": "./tinycld/calendar-slots/components/*.tsx"
+        "./components/*": "./tinycld/calendar-slots/components/*.tsx",
+        "./sidebar-contributions/*": "./tinycld/calendar-slots/sidebar-contributions/*.tsx",
+        "./stores/*": "./tinycld/calendar-slots/stores/*.ts"
     },
     "scripts": {
         "typecheck": "tinycld-pkg typecheck",

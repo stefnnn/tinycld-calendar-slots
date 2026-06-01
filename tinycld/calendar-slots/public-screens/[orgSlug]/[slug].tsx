@@ -119,7 +119,8 @@ export default function PublicBookPage() {
             })
             if (!resp.ok) {
                 const body = await resp.json().catch(() => ({}))
-                throw new Error(body.error || body.message || 'Booking failed')
+                const msg = body.message || body.error || 'Booking failed'
+                throw new Error(msg)
             }
             setStep('done')
         } catch (e: unknown) {
