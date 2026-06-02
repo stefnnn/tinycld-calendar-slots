@@ -1,5 +1,4 @@
 import {
-    SidebarActionButton,
     SidebarItem,
     SidebarNav,
 } from '@tinycld/core/components/sidebar-primitives'
@@ -8,7 +7,8 @@ import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
 import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { usePathname, useRouter } from 'expo-router'
-import { CalendarPlus2 } from 'lucide-react-native'
+import { CalendarPlus2, Plus } from 'lucide-react-native'
+import { useBookingPageDialogStore } from './stores/booking-page-dialog-store'
 
 export default function CalendarSlotsSidebar() {
     const router = useRouter()
@@ -16,6 +16,7 @@ export default function CalendarSlotsSidebar() {
     const orgHref = useOrgHref()
     const muted = useThemeColor('muted-foreground')
     const [pagesCollection] = useStore('booking_pages')
+    const openDialog = useBookingPageDialogStore(s => s.open)
 
     const { data: pages } = useOrgLiveQuery(
         (query, _org) => query.from({ p: pagesCollection }),
@@ -27,11 +28,6 @@ export default function CalendarSlotsSidebar() {
 
     return (
         <SidebarNav>
-            <SidebarActionButton
-                label="+ New Booking Page"
-                onPress={() => router.push(orgHref('calendar-slots/[id]', { id: 'new' }))}
-            />
-
             <SidebarItem
                 label="All Pages"
                 icon={CalendarPlus2}
@@ -46,13 +42,15 @@ export default function CalendarSlotsSidebar() {
                     key={page.id}
                     label={page.name}
                     colorDot={page.active ? '#22c55e' : `${muted}80`}
-                    isActive={pathname.endsWith(`/calendar-slots/${page.id}`)}
-                    closesDrawer
-                    onPress={() =>
-                        router.push(orgHref('calendar-slots/[id]', { id: page.id }))
-                    }
+                    onPress={() => openDialog(page.id)}
                 />
             ))}
+
+            <SidebarItem
+                label="New booking page"
+                icon={Plus}
+                onPress={() => openDialog()}
+            />
         </SidebarNav>
     )
 }

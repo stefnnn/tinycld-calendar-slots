@@ -1,21 +1,19 @@
-import { useCurrentRole } from '@tinycld/core/lib/use-current-role'
-import { useOrgHref } from '@tinycld/core/lib/org-routes'
 import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
 import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
-import { Link, Stack, useRouter } from 'expo-router'
+import { Stack } from 'expo-router'
 import { Plus } from 'lucide-react-native'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { BookingUrlRow } from '../components/BookingUrlRow'
+import { useBookingPageDialogStore } from '../stores/booking-page-dialog-store'
 
 export default function BookingPagesIndex() {
     const fg = useThemeColor('foreground')
     const muted = useThemeColor('muted-foreground')
-    const router = useRouter()
-    const orgHref = useOrgHref()
     const orgSlug = useOrgSlug()
     const [pagesCollection] = useStore('booking_pages')
+    const openDialog = useBookingPageDialogStore(s => s.open)
 
     const { data: pages, isLoading } = useOrgLiveQuery(
         (query, _org) =>
@@ -33,7 +31,7 @@ export default function BookingPagesIndex() {
                             Booking Pages
                         </Text>
                         <Pressable
-                            onPress={() => router.push(orgHref('calendar-slots/[id]', { id: 'new' }))}
+                            onPress={() => openDialog()}
                             className="bg-primary px-4 py-2 rounded-lg flex-row items-center gap-2"
                         >
                             <Plus size={16} color="#fff" />
@@ -59,9 +57,9 @@ export default function BookingPagesIndex() {
                     )}
 
                     {pages && pages.map(page => (
-                        <Link
+                        <Pressable
                             key={page.id}
-                            href={orgHref('calendar-slots/[id]', { id: page.id })}
+                            onPress={() => openDialog(page.id)}
                             style={{ width: '100%' }}
                         >
                             <View className="bg-card border border-border rounded-xl p-4 gap-2 w-full">
@@ -95,7 +93,7 @@ export default function BookingPagesIndex() {
                                     </Text>
                                 ) : null}
                             </View>
-                        </Link>
+                        </Pressable>
                     ))}
                 </View>
             </ScrollView>

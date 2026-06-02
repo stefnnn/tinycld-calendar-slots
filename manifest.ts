@@ -5,12 +5,6 @@ const manifest = {
   description: "Let users book a slot on your calendar",
   routes: { directory: "screens" },
   publicRoutes: { directory: "public-screens" },
-  nav: {
-    label: "Calendar Slots",
-    icon: "calendar-plus-2",
-    order: 9,
-    shortcut: "",
-  },
   sidebar: { component: "sidebar" },
   provider: { component: "provider" },
   migrations: { directory: "pb-migrations" },
@@ -18,6 +12,15 @@ const manifest = {
   seed: { script: "seed" },
   server: { package: "server", module: "tinycld.org/packages/calendar-slots" },
   repository: { url: "https://github.com/stefnnn/tinycld-calendar-slots" },
+  tests: { directory: "tests" },
+  sidebarContributions: [
+    {
+      target: "calendar",
+      slot: "sidebar.after-calendars",
+      component: "sidebar-contributions/booking-pages",
+      order: 0,
+    },
+  ],
 };
 
 export default manifest;
