@@ -11,6 +11,7 @@ const manifest = {
   collections: { register: "collections", types: "types" },
   seed: { script: "seed" },
   server: { package: "server", module: "tinycld.org/packages/calendar-slots" },
+  repository: { url: "https://github.com/stefnnn/tinycld-calendar-slots" },
   tests: { directory: "tests" },
   sidebarContributions: [
     {
