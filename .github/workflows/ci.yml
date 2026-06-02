@@ -36,27 +36,15 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      # 3. Clone app + core (bootstrap --tooling skips dirs that already exist).
-      - name: Assemble workspace (app + core)
+      # 3. Clone app + core (the PR's PACKAGE is already checked out into its
+      #    slot; bootstrap --assemble-only skips dirs that already exist). A sibling
+      #    only needs app + core + itself to typecheck + unit-test.
+      - name: Assemble workspace (app + core + calendar)
         working-directory: ws
-        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --tooling
-      # 4. Install without running postinstall so we can link the package first.
-      #    The workspace package-lock.json predates this external package, so npm
-      #    won't create its node_modules symlink before the generator runs.
-      - name: Install (workspace root, skip scripts)
+        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
+      - name: Install (workspace root)
         working-directory: ws
-        run: npm install --ignore-scripts
-      # 5. Symlink the package so the generator can resolve it via node_modules.
-      - name: Link package into node_modules
-        working-directory: ws
-        run: mkdir -p node_modules/@tinycld && ln -sf "$(realpath ${{ env.PACKAGE }})" node_modules/@tinycld/${{ env.PACKAGE }}
-      # 6. Run the postinstall steps manually now that the symlink exists.
-      - name: Generate packages
-        working-directory: ws/app
-        run: npm run packages:generate
-      - name: Copy assets
-        working-directory: ws/app
-        run: npm run assets:copy-pdfjs
+        run: npm install
       - name: Typecheck + unit
         working-directory: ws/${{ env.PACKAGE }}
         run: npx tinycld-pkg check
@@ -81,29 +69,35 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      - name: Assemble workspace (app + core)
+      - name: Assemble workspace (app + core + calendar)
         working-directory: ws
-        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --tooling
-      - name: Install (workspace root, skip scripts)
+        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
+      - name: Install (workspace root)
         working-directory: ws
-        run: npm install --ignore-scripts
-      - name: Link package into node_modules
-        working-directory: ws
-        run: mkdir -p node_modules/@tinycld && ln -sf "$(realpath ${{ env.PACKAGE }})" node_modules/@tinycld/${{ env.PACKAGE }}
-      - name: Generate packages
-        working-directory: ws/app
-        run: npm run packages:generate
-      - name: Copy assets
-        working-directory: ws/app
-        run: npm run assets:copy-pdfjs
-      # Pre-build the PocketBase binary so Go module downloads don't happen
-      # inside the PocketBase startup timeout during the test run.
-      - name: Build PocketBase
-        working-directory: ws/app/server
-        run: go build -o app .
+        run: npm install
+      # Installs watchman so Metro's file watcher doesn't fall back to
+      # polling — see tinycld/app#21 for the trace evidence and the
+      # blank-page-after-reload flake it fixed.
+      - name: Configure test env
+        uses: tinycld/app/.github/actions/configure-test-env@main
       - name: Install Playwright browsers
         working-directory: ws/app
         run: npx playwright install --with-deps chromium
       - name: E2E
         working-directory: ws/${{ env.PACKAGE }}
+        env:
+          TINYCLD_WARM_PACKAGES: calendar-slots
         run: npx tinycld-pkg test:e2e
+      # Capture Playwright's per-failure artifacts (trace, screenshot,
+      # video, error-context.md) so a CI failure can be diagnosed
+      # without a re-run. `if: failure()` skips the upload on green
+      # runs to save bandwidth + retention.
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            ws/${{ env.PACKAGE }}/test-results/
+            ws/${{ env.PACKAGE }}/playwright-report/
+          retention-days: 14
