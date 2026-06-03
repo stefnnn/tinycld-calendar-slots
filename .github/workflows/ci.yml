@@ -18,28 +18,36 @@ jobs:
     name: Typecheck & Unit
     runs-on: ubuntu-latest
     steps:
-      # 1. The workspace meta-repo becomes the job root.
-      - uses: actions/checkout@v5
-        with:
-          repository: tinycld/workspace
-          ref: main
-          path: ws
-      # 2. This PR's code, checked out into the member slot.
+      # 1. This PR's code, checked out into the member slot.
       - uses: actions/checkout@v5
         with:
           path: ws/${{ env.PACKAGE }}
+      # 2. Pin a Node that satisfies bootstrap's engines.node (>=24) so the
+      #    assemble step below doesn't depend on whatever ubuntu-latest ships.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      # 3. Assemble the workspace root: writes package.json + pnpm-workspace.yaml
+      #    from bootstrap's embedded templates, clones app + core (+ calendar,
+      #    which calendar-slots contributes a sidebar entry to) as siblings. The
+      #    PR's PACKAGE dir is already there and is skipped.
+      - name: Assemble workspace (app + core + calendar)
+        working-directory: ws
+        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
+      # 4. bootstrap's template member list is the official tinycld packages and
+      #    does not include this external package — register it so pnpm installs
+      #    its devDependencies and links the tinycld-pkg bin into the member.
+      - name: Register package as workspace member
+        working-directory: ws
+        run: node ${{ github.workspace }}/ws/${{ env.PACKAGE }}/.github/scripts/register-member.mjs "${{ env.PACKAGE }}"
+      # 5. Now switch to the version the assembled workspace pins (ws/.node-version
+      #    is written by the assemble step above).
       - uses: actions/setup-node@v5
         with:
           node-version-file: ws/.node-version
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      # 3. Clone app + core + calendar (calendar-slots contributes a sidebar entry
-      #    to it). The PR's PACKAGE is already checked out into its slot;
-      #    bootstrap --assemble-only skips dirs that already exist.
-      - name: Assemble workspace (app + core + calendar)
-        working-directory: ws
-        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
       - name: Install (workspace root)
         working-directory: ws
         run: corepack enable && pnpm install --no-frozen-lockfile
@@ -53,21 +61,25 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          repository: tinycld/workspace
-          ref: main
-          path: ws
-      - uses: actions/checkout@v5
-        with:
           path: ws/${{ env.PACKAGE }}
+      # Pin a Node that satisfies bootstrap's engines.node (>=24) so the
+      # assemble step below doesn't depend on whatever ubuntu-latest ships.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+      - name: Assemble workspace (app + core + calendar)
+        working-directory: ws
+        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
+      - name: Register package as workspace member
+        working-directory: ws
+        run: node ${{ github.workspace }}/ws/${{ env.PACKAGE }}/.github/scripts/register-member.mjs "${{ env.PACKAGE }}"
+      # Switch to the version the assembled workspace pins.
       - uses: actions/setup-node@v5
         with:
           node-version-file: ws/.node-version
       - uses: actions/setup-go@v6
         with:
           go-version-file: ws/.go-version
-      - name: Assemble workspace (app + core + calendar)
-        working-directory: ws
-        run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
       - name: Install (workspace root)
         working-directory: ws
         run: corepack enable && pnpm install --no-frozen-lockfile
