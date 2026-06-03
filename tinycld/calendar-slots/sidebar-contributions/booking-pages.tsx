@@ -16,13 +16,11 @@ export default function BookingPagesSidebarContribution() {
 
     const { data: pages } = useOrgLiveQuery((query, _org) => query.from({ p: pagesCollection }), [])
 
-    if (!pages?.length) return null
-
     const ChevronIcon = expanded ? ChevronDown : ChevronRight
 
     return (
         <>
-            <View className="mt-2">
+            <View testID="booking-pages-sidebar" className="mt-2">
                 <Pressable
                     className="flex-row items-center gap-1.5 px-3 py-1.5"
                     onPress={() => setExpanded(prev => !prev)}
@@ -34,7 +32,7 @@ export default function BookingPagesSidebarContribution() {
                 </Pressable>
                 {expanded && (
                     <>
-                        {pages.map(page => (
+                        {pages?.map(page => (
                             <SidebarItem
                                 key={page.id}
                                 label={page.name}

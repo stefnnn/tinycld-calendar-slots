@@ -8,8 +8,9 @@ test.describe('Calendar Slots — Booking Pages', () => {
     test.beforeEach(async ({ page }) => {
         await login(page)
         await navigateToPackage(page, 'calendar', {
-            waitFor: page.getByText('Booking pages'),
+            waitFor: page.getByTestId('package-sidebar-mounted'),
         })
+        await page.getByTestId('booking-pages-sidebar').waitFor({ state: 'visible' })
     })
 
     test('calendar sidebar lists the seeded demo page', async ({ page }) => {

@@ -1,0 +1,8 @@
+node_modules/
+*.tsbuildinfo
+.DS_Store
+pnpm-lock.yaml
+.claude/
+test-results/
+/server/go.work
+/server/go.work.sum
