@@ -4,7 +4,6 @@ const manifest = {
     version: '0.1.0',
     description: 'Let users book a slot on your calendar',
     routes: { directory: 'screens' },
-    nav: { label: 'Booking', icon: 'calendar-plus-2', order: 9, shortcut: 'b' },
     publicRoutes: { directory: 'public-screens' },
     sidebar: { component: 'sidebar' },
     provider: { component: 'provider' },
