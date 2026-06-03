@@ -34,13 +34,7 @@ jobs:
       - name: Assemble workspace (app + core + calendar)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
-      # 4. bootstrap's template member list is the official tinycld packages and
-      #    does not include this external package — register it so pnpm installs
-      #    its devDependencies and links the tinycld-pkg bin into the member.
-      - name: Register package as workspace member
-        working-directory: ws
-        run: node ${{ github.workspace }}/ws/${{ env.PACKAGE }}/.github/scripts/register-member.mjs "${{ env.PACKAGE }}"
-      # 5. Now switch to the version the assembled workspace pins (ws/.node-version
+      # 4. Now switch to the version the assembled workspace pins (ws/.node-version
       #    is written by the assemble step above).
       - uses: actions/setup-node@v5
         with:
@@ -70,9 +64,6 @@ jobs:
       - name: Assemble workspace (app + core + calendar)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
-      - name: Register package as workspace member
-        working-directory: ws
-        run: node ${{ github.workspace }}/ws/${{ env.PACKAGE }}/.github/scripts/register-member.mjs "${{ env.PACKAGE }}"
       # Switch to the version the assembled workspace pins.
       - uses: actions/setup-node@v5
         with:
