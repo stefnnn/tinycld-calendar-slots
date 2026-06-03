@@ -14,10 +14,7 @@ export default function BookingPagesSidebarContribution() {
     const [expanded, setExpanded] = useState(true)
     const openDialog = useBookingPageDialogStore(s => s.open)
 
-    const { data: pages } = useOrgLiveQuery(
-        (query, _org) => query.from({ p: pagesCollection }),
-        []
-    )
+    const { data: pages } = useOrgLiveQuery((query, _org) => query.from({ p: pagesCollection }), [])
 
     if (!pages?.length) return null
 

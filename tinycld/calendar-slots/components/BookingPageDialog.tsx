@@ -1,25 +1,25 @@
-import { mutation, useMutation } from '@tinycld/core/lib/mutations'
-import { newRecordId } from 'pbtsdb/core'
-import { useBreakpoint } from '@tinycld/core/components/workspace/useBreakpoint'
-import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
-import { useStore } from '@tinycld/core/lib/pocketbase'
-import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
-import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
 import { SuretyGuard } from '@tinycld/core/components/SuretyGuard'
+import { useBreakpoint } from '@tinycld/core/components/workspace/useBreakpoint'
 import { handleMutationErrorsWithForm } from '@tinycld/core/lib/errors'
+import { mutation, useMutation } from '@tinycld/core/lib/mutations'
+import { useStore } from '@tinycld/core/lib/pocketbase'
+import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
 import { useCurrentUserOrg } from '@tinycld/core/lib/use-current-user-org'
 import { useOrgInfo } from '@tinycld/core/lib/use-org-info'
-import { FormErrorSummary, TextInput, Toggle, TextAreaInput } from '@tinycld/core/ui/form'
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
+import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
+import { FormErrorSummary, TextAreaInput, TextInput, Toggle } from '@tinycld/core/ui/form'
 import { Modal, ModalBackdrop, ModalContent } from '@tinycld/core/ui/modal'
 import { X } from 'lucide-react-native'
+import { newRecordId } from 'pbtsdb/core'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Pressable, ScrollView, Text, View } from 'react-native'
+import { useBookingPageDialogStore } from '../stores/booking-page-dialog-store'
 import { AvailabilityEditor } from './AvailabilityEditor'
 import { BookingRulesEditor } from './BookingRulesEditor'
 import { BookingUrlRow } from './BookingUrlRow'
 import { SlotTypeEditor } from './SlotTypeEditor'
-import { useBookingPageDialogStore } from '../stores/booking-page-dialog-store'
 
 function generateSlug(name: string): string {
     return name
@@ -118,7 +118,7 @@ export function BookingPageDialog() {
             intro_text: string
             active: boolean
         }) {
-            if (isNew) {
+            if (pageId === null) {
                 if (!orgId || !userOrg) throw new Error('No organization context')
                 const newId = newRecordId()
                 pendingNewId.current = newId
@@ -128,15 +128,17 @@ export function BookingPageDialog() {
                     org: orgId,
                     owner: userOrg.id,
                     min_notice_hours: 0,
-                    booking_window: '' as any,
+                    booking_window: 'infinite',
                     booking_rolling_days: 0,
                     booking_date_from: '',
                     booking_date_to: '',
                     max_bookings_count: 0,
-                    max_bookings_period: '' as any,
+                    // '' means "no limit"; the generated schema omits the empty
+                    // option for this required:false select, so cast through unknown.
+                    max_bookings_period: '' as unknown as 'day' | 'week' | 'month',
                 })
             } else {
-                yield pagesCollection.update(pageId!, (draft) => {
+                yield pagesCollection.update(pageId, draft => {
                     draft.name = data.name
                     draft.slug = data.slug
                     draft.intro_text = data.intro_text
@@ -154,13 +156,14 @@ export function BookingPageDialog() {
         onError: handleMutationErrorsWithForm({ setError, getValues }),
     })
 
-    const handleSave = handleSubmit((data) => {
+    const handleSave = handleSubmit(data => {
         saveMutation.mutate(data)
     })
 
     const deleteMutation = useMutation({
         mutationFn: mutation(function* () {
-            yield pagesCollection.delete(pageId!)
+            if (pageId === null) return
+            yield pagesCollection.delete(pageId)
         }),
         onSuccess: () => {
             close()
@@ -183,12 +186,20 @@ export function BookingPageDialog() {
                     </Pressable>
                 </View>
 
-                <ScrollView ref={scrollViewRef} className="flex-1" keyboardShouldPersistTaps="handled">
+                <ScrollView
+                    ref={scrollViewRef}
+                    className="flex-1"
+                    keyboardShouldPersistTaps="handled"
+                >
                     <View className="p-4 gap-6">
                         <FormErrorSummary errors={errors} isEnabled={isSubmitted} />
 
                         <View className="bg-card border border-border rounded-xl p-4 gap-3">
-                            <View className={isMobile ? 'flex-col gap-3' : 'flex-row items-start gap-3'}>
+                            <View
+                                className={
+                                    isMobile ? 'flex-col gap-3' : 'flex-row items-start gap-3'
+                                }
+                            >
                                 <View style={{ flex: 1, minWidth: 0 }}>
                                     <TextInput
                                         control={control}
@@ -207,12 +218,21 @@ export function BookingPageDialog() {
                                 </View>
                             </View>
 
-                            <View className={isMobile ? 'flex-col gap-3' : 'flex-row items-center gap-3'}>
+                            <View
+                                className={
+                                    isMobile ? 'flex-col gap-3' : 'flex-row items-center gap-3'
+                                }
+                            >
                                 <View style={{ flex: 1, minWidth: 0 }}>
                                     <BookingUrlRow orgSlug={orgSlug} slug={watch('slug')} />
                                 </View>
                                 <View style={{ width: 100 }}>
-                                    <Toggle control={control} name="active" label="Active" wrapperProps={{ style: { marginBottom: 0 } }} />
+                                    <Toggle
+                                        control={control}
+                                        name="active"
+                                        label="Active"
+                                        wrapperProps={{ style: { marginBottom: 0 } }}
+                                    />
                                 </View>
                             </View>
                         </View>
@@ -225,7 +245,7 @@ export function BookingPageDialog() {
                             numberOfLines={3}
                         />
 
-                        {!isNew && (
+                        {pageId !== null && (
                             <>
                                 <View ref={appointmentTypesRef}>
                                     <View className="h-px bg-border my-2" />
@@ -234,19 +254,18 @@ export function BookingPageDialog() {
                                         Appointment Types
                                     </Text>
                                 </View>
-                                <SlotTypeEditor pageId={pageId!} />
+                                <SlotTypeEditor pageId={pageId} />
 
                                 <View className="h-px bg-border my-2" />
 
                                 <Text style={{ color: fg, fontSize: 18, fontWeight: '600' }}>
                                     Availability
                                 </Text>
-                                <AvailabilityEditor pageId={pageId!} />
+                                <AvailabilityEditor pageId={pageId} />
 
                                 <View className="h-px bg-border my-2" />
 
-                                {page && <BookingRulesEditor pageId={pageId!} page={page} />}
-
+                                {page && <BookingRulesEditor pageId={pageId} page={page} />}
                             </>
                         )}
 
@@ -262,8 +281,16 @@ export function BookingPageDialog() {
                                             onPress={onOpen}
                                             className="border border-red-500 px-6 py-3 rounded-xl items-center"
                                         >
-                                            <Text style={{ color: '#ef4444', fontSize: 14, fontWeight: '600' }}>
-                                                {deleteMutation.isPending ? 'Deleting...' : 'Delete Page'}
+                                            <Text
+                                                style={{
+                                                    color: '#ef4444',
+                                                    fontSize: 14,
+                                                    fontWeight: '600',
+                                                }}
+                                            >
+                                                {deleteMutation.isPending
+                                                    ? 'Deleting...'
+                                                    : 'Delete Page'}
                                             </Text>
                                         </Pressable>
                                     )}
@@ -274,7 +301,10 @@ export function BookingPageDialog() {
                                 onPress={handleSave}
                                 className="bg-primary px-6 py-3 rounded-xl items-center"
                             >
-                                <Text className="text-primary-foreground" style={{ fontSize: 15, fontWeight: '600' }}>
+                                <Text
+                                    className="text-primary-foreground"
+                                    style={{ fontSize: 15, fontWeight: '600' }}
+                                >
                                     {saveMutation.isPending ? 'Saving...' : 'Save Page'}
                                 </Text>
                             </Pressable>

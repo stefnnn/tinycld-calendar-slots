@@ -13,5 +13,5 @@ export const useBookingPageDialogStore = create<BookingPageDialogState>()(set =>
     pageId: null,
     open: (pageId = null) => set({ isOpen: true, pageId }),
     close: () => set({ isOpen: false, pageId: null }),
-    setPageId: (pageId) => set({ pageId }),
+    setPageId: pageId => set({ pageId }),
 }))
