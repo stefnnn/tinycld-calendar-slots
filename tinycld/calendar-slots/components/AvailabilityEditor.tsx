@@ -1,10 +1,10 @@
 import { mutation, useMutation } from '@tinycld/core/lib/mutations'
-import { newRecordId } from 'pbtsdb/core'
 import { useStore } from '@tinycld/core/lib/pocketbase'
-import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { PlainInput } from '@tinycld/core/ui/PlainInput'
 import { Plus, Trash2 } from 'lucide-react-native'
+import { newRecordId } from 'pbtsdb/core'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
@@ -27,8 +27,7 @@ export function AvailabilityEditor({ pageId }: AvailabilityEditorProps) {
     const [end, setEnd] = useState('17:00')
 
     const { data: availabilities } = useOrgLiveQuery(
-        (query, _org) =>
-            query.from({ a: availabilityCollection }),
+        (query, _org) => query.from({ a: availabilityCollection }),
         [pageId]
     )
 
@@ -84,10 +83,7 @@ export function AvailabilityEditor({ pageId }: AvailabilityEditorProps) {
                                 {a.start_time} — {a.end_time}
                             </Text>
                         </View>
-                        <Pressable
-                            onPress={() => deleteMutation.mutate(a.id)}
-                            className="p-2"
-                        >
+                        <Pressable onPress={() => deleteMutation.mutate(a.id)} className="p-2">
                             <Trash2 size={16} color="#ef4444" />
                         </Pressable>
                     </View>
@@ -106,8 +102,13 @@ export function AvailabilityEditor({ pageId }: AvailabilityEditorProps) {
                                     style={{ borderColor: selected ? primaryColor : borderColor }}
                                 >
                                     <Text
-                                        className={selected ? 'text-primary-foreground' : 'text-foreground'}
-                                        style={{ fontSize: 13, fontWeight: selected ? '600' : '400' }}
+                                        className={
+                                            selected ? 'text-primary-foreground' : 'text-foreground'
+                                        }
+                                        style={{
+                                            fontSize: 13,
+                                            fontWeight: selected ? '600' : '400',
+                                        }}
                                     >
                                         {d}
                                     </Text>
@@ -142,7 +143,10 @@ export function AvailabilityEditor({ pageId }: AvailabilityEditorProps) {
                             onPress={handleAdd}
                             className="bg-primary flex-1 py-2 rounded-lg items-center"
                         >
-                            <Text className="text-primary-foreground" style={{ fontSize: 14, fontWeight: '600' }}>
+                            <Text
+                                className="text-primary-foreground"
+                                style={{ fontSize: 14, fontWeight: '600' }}
+                            >
                                 Add
                             </Text>
                         </Pressable>

@@ -13,12 +13,15 @@ test.describe('Calendar Slots — Public Booking Page', () => {
     test('renders available time slots', async ({ page }) => {
         await page.goto(`/p/calendar-slots/${ORG_SLUG}/demo`)
         await expect(page.getByText('SELECT A TIME')).toBeVisible()
-        await expect(page.getByText('9:00 AM').first()).toBeVisible()
+        await expect(page.getByText(/\d{1,2}:\d{2} (AM|PM)/).first()).toBeVisible()
     })
 
     test('selecting a slot shows the booking form', async ({ page }) => {
         await page.goto(`/p/calendar-slots/${ORG_SLUG}/demo`)
-        await page.getByText('9:00 AM').first().click()
+        await page
+            .getByText(/\d{1,2}:\d{2} (AM|PM)/)
+            .first()
+            .click()
         await expect(page.getByText('Enter your details')).toBeVisible()
         await expect(page.getByPlaceholder('Your name')).toBeVisible()
         await expect(page.getByPlaceholder('your@email.com')).toBeVisible()

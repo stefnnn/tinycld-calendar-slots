@@ -17,4 +17,9 @@ const TEST_DIR = path.join(WS_ROOT, 'node_modules', '@tinycld', 'calendar-slots'
 export default defineConfig({
     ...appConfig,
     testDir: TEST_DIR,
+    // The first hit to a route triggers on-demand Metro bundling that can
+    // exceed the default 5s expect timeout on a cold CI run; later tests reuse
+    // the warm bundle. Give assertions more room so the first spec per route
+    // isn't a cold-start casualty.
+    expect: { timeout: 15_000 },
 })

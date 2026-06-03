@@ -1,21 +1,21 @@
 import { mutation, useMutation } from '@tinycld/core/lib/mutations'
-import { newRecordId } from 'pbtsdb/core'
 import { useOrgHref } from '@tinycld/core/lib/org-routes'
-import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
 import { useStore } from '@tinycld/core/lib/pocketbase'
-import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
 import { useCurrentUserOrg } from '@tinycld/core/lib/use-current-user-org'
 import { useOrgInfo } from '@tinycld/core/lib/use-org-info'
-import { TextInput, Toggle, TextAreaInput } from '@tinycld/core/ui/form'
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
+import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
+import { TextAreaInput, TextInput, Toggle } from '@tinycld/core/ui/form'
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { newRecordId } from 'pbtsdb/core'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Pressable, ScrollView, Text, View } from 'react-native'
 import { AvailabilityEditor } from '../components/AvailabilityEditor'
+import { BookingRulesEditor } from '../components/BookingRulesEditor'
 import { BookingUrlRow } from '../components/BookingUrlRow'
 import { SlotTypeEditor } from '../components/SlotTypeEditor'
-import { BookingRulesEditor } from '../components/BookingRulesEditor'
 
 function generateSlug(name: string): string {
     return name
@@ -35,9 +35,9 @@ export default function BookingPageEdit() {
     const { orgId } = useOrgInfo()
     const userOrg = useCurrentUserOrg(orgSlug)
     const [pagesCollection] = useStore('booking_pages')
-    const [slotTypesCollection] = useStore('booking_slot_types')
-    const [availabilityCollection] = useStore('booking_availability')
-    const [bookingsCollection] = useStore('bookings')
+    const [_slotTypesCollection] = useStore('booking_slot_types')
+    const [_availabilityCollection] = useStore('booking_availability')
+    const [_bookingsCollection] = useStore('bookings')
 
     const [saved, setSaved] = useState(false)
 
@@ -51,7 +51,7 @@ export default function BookingPageEdit() {
 
     const page = pages?.find(p => p.id === id) ?? null
 
-    const { control, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+    const { control, handleSubmit, watch, setValue } = useForm({
         defaultValues: {
             name: '',
             slug: '',
@@ -92,15 +92,17 @@ export default function BookingPageEdit() {
                     org: orgId,
                     owner: userOrg.id,
                     min_notice_hours: 0,
-                    booking_window: '' as any,
+                    booking_window: 'infinite',
                     booking_rolling_days: 0,
                     booking_date_from: '',
                     booking_date_to: '',
                     max_bookings_count: 0,
-                    max_bookings_period: '' as any,
+                    // '' means "no limit"; the generated schema omits the empty
+                    // option for this required:false select, so cast through unknown.
+                    max_bookings_period: '' as unknown as 'day' | 'week' | 'month',
                 })
             } else {
-                yield pagesCollection.update(id!, (draft) => {
+                yield pagesCollection.update(id, draft => {
                     draft.name = data.name
                     draft.slug = data.slug
                     draft.intro_text = data.intro_text
@@ -116,13 +118,13 @@ export default function BookingPageEdit() {
         },
     })
 
-    const handleSave = handleSubmit((data) => {
+    const handleSave = handleSubmit(data => {
         saveMutation.mutate(data)
     })
 
     const deleteMutation = useMutation({
         mutationFn: mutation(function* () {
-            yield pagesCollection.delete(id!)
+            yield pagesCollection.delete(id)
         }),
         onSuccess: () => {
             router.replace(orgHref('calendar-slots'))
@@ -167,7 +169,12 @@ export default function BookingPageEdit() {
                                 <BookingUrlRow orgSlug={orgSlug} slug={watch('slug')} />
                             </View>
                             <View style={{ flex: 1, minWidth: 0 }}>
-                                <Toggle control={control} name="active" label="Active" wrapperProps={{ style: { marginBottom: 0 } }} />
+                                <Toggle
+                                    control={control}
+                                    name="active"
+                                    label="Active"
+                                    wrapperProps={{ style: { marginBottom: 0 } }}
+                                />
                             </View>
                         </View>
                     </View>
@@ -184,7 +191,10 @@ export default function BookingPageEdit() {
                         onPress={handleSave}
                         className="bg-primary px-6 py-3 rounded-xl items-center"
                     >
-                        <Text className="text-primary-foreground" style={{ fontSize: 15, fontWeight: '600' }}>
+                        <Text
+                            className="text-primary-foreground"
+                            style={{ fontSize: 15, fontWeight: '600' }}
+                        >
                             {saveMutation.isPending ? 'Saving...' : 'Save Page'}
                         </Text>
                     </Pressable>
@@ -208,18 +218,18 @@ export default function BookingPageEdit() {
                             <Text style={{ color: fg, fontSize: 18, fontWeight: '600' }}>
                                 Appointment Types
                             </Text>
-                            <SlotTypeEditor pageId={id!} />
+                            <SlotTypeEditor pageId={id} />
 
                             <View className="h-px bg-border my-2" />
 
                             <Text style={{ color: fg, fontSize: 18, fontWeight: '600' }}>
                                 Availability
                             </Text>
-                            <AvailabilityEditor pageId={id!} />
+                            <AvailabilityEditor pageId={id} />
 
                             <View className="h-px bg-border my-2" />
 
-                            {page && <BookingRulesEditor pageId={id!} page={page} />}
+                            {page && <BookingRulesEditor pageId={id} page={page} />}
 
                             <View className="h-px bg-border my-2" />
 

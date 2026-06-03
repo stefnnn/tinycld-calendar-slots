@@ -1,7 +1,7 @@
-import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
-import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
+import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
 import { Stack } from 'expo-router'
 import { Plus } from 'lucide-react-native'
 import { Pressable, ScrollView, Text, View } from 'react-native'
@@ -16,8 +16,7 @@ export default function BookingPagesIndex() {
     const openDialog = useBookingPageDialogStore(s => s.open)
 
     const { data: pages, isLoading } = useOrgLiveQuery(
-        (query, _org) =>
-            query.from({ p: pagesCollection }),
+        (query, _org) => query.from({ p: pagesCollection }),
         []
     )
 
@@ -35,28 +34,27 @@ export default function BookingPagesIndex() {
                             className="bg-primary px-4 py-2 rounded-lg flex-row items-center gap-2"
                         >
                             <Plus size={16} color="#fff" />
-                            <Text className="text-primary-foreground" style={{ fontSize: 14, fontWeight: '600' }}>
+                            <Text
+                                className="text-primary-foreground"
+                                style={{ fontSize: 14, fontWeight: '600' }}
+                            >
                                 New Page
                             </Text>
                         </Pressable>
                     </View>
 
-                    {isLoading && (
-                        <Text style={{ color: muted, fontSize: 14 }}>Loading...</Text>
-                    )}
+                    {isLoading && <Text style={{ color: muted, fontSize: 14 }}>Loading...</Text>}
 
                     {!isLoading && pages && pages.length === 0 && (
                         <View className="py-12 items-center gap-3">
-                            <Text style={{ color: muted, fontSize: 15 }}>
-                                No booking pages yet
-                            </Text>
+                            <Text style={{ color: muted, fontSize: 15 }}>No booking pages yet</Text>
                             <Text style={{ color: muted, fontSize: 13 }}>
                                 Create a booking page to let people schedule time on your calendar.
                             </Text>
                         </View>
                     )}
 
-                    {pages && pages.map(page => (
+                    {pages?.map(page => (
                         <Pressable
                             key={page.id}
                             onPress={() => openDialog(page.id)}
@@ -70,7 +68,9 @@ export default function BookingPagesIndex() {
                                     <View
                                         className="px-2 py-0.5 rounded-full"
                                         style={{
-                                            backgroundColor: page.active ? '#22c55e20' : '#6b728020',
+                                            backgroundColor: page.active
+                                                ? '#22c55e20'
+                                                : '#6b728020',
                                         }}
                                     >
                                         <Text
@@ -85,10 +85,7 @@ export default function BookingPagesIndex() {
                                 </View>
                                 <BookingUrlRow orgSlug={orgSlug} slug={page.slug} />
                                 {page.intro_text ? (
-                                    <Text
-                                        numberOfLines={2}
-                                        style={{ color: muted, fontSize: 13 }}
-                                    >
+                                    <Text numberOfLines={2} style={{ color: muted, fontSize: 13 }}>
                                         {page.intro_text}
                                     </Text>
                                 ) : null}

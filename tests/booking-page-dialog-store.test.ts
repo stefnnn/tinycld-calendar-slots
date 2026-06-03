@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { useBookingPageDialogStore } from '../tinycld/calendar-slots/stores/booking-page-dialog-store'
 
 describe('useBookingPageDialogStore', () => {

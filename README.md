@@ -38,24 +38,24 @@ Clone this repo as a member of your tinycld workspace, then reinstall at the wor
 ```sh
 cd ~/code/tinycld
 git clone git@github.com:stefnnn/tinycld-calendar-slots.git
-npm install          # re-links members and re-runs the generator
+pnpm install          # re-links members and re-runs the generator
 ```
 
 Or bootstrap a fresh workspace with this package included from the start:
 
 ```sh
 npx @tinycld/bootstrap@latest --tooling --with calendar-slots
-npm install
-cd app && npm run dev
+pnpm install
+cd app && pnpm run dev
 ```
 
-To remove the package, delete its directory and run `npm install` again at the workspace root.
+To remove the package, delete its directory and run `pnpm install` again at the workspace root.
 
 ## Development
 
 The package is one member of a tinycld workspace. To work on it you need a
 workspace root containing at least `app`, `core`, and this package as siblings,
-linked by a single `npm install` at the root.
+linked by a single `pnpm install` at the root.
 
 ```sh
 # In a fresh workspace directory, clone this package into a member slot…
@@ -67,11 +67,11 @@ npx @tinycld/bootstrap@latest --tooling
 
 # Link every member with one install at the WORKSPACE ROOT (never inside a
 # member — siblings have no node_modules of their own; deps hoist to the root).
-npm install
+pnpm install
 
 # Run the full stack (Expo + PocketBase, single-port dev proxy) from the app.
 cd app
-npm run dev
+pnpm run dev
 ```
 
 ## Checks
@@ -82,9 +82,9 @@ app shell's biome config, tsconfig base, and vitest/playwright configs (so
 
 ```sh
 cd calendar-slots
-npx tinycld-pkg check       # biome + typecheck
-npx tinycld-pkg test        # vitest unit tests
-npx tinycld-pkg test:e2e    # playwright e2e specs (full preset only — packages with screens)
+pnpm exec tinycld-pkg check       # biome + typecheck
+pnpm exec tinycld-pkg test        # vitest unit tests
+pnpm exec tinycld-pkg test:e2e    # playwright e2e specs (full preset only — packages with screens)
 ```
 
 There is no `biome.json` in this repo — biome lives only in the app shell and

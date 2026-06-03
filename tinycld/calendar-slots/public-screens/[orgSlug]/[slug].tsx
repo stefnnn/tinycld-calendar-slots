@@ -1,14 +1,7 @@
 import { PB_SERVER_ADDR } from '@tinycld/core/lib/pocketbase'
 import { Stack, useLocalSearchParams } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-    ActivityIndicator,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
-} from 'react-native'
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 
 interface SlotType {
     id: string
@@ -35,24 +28,22 @@ interface BookingPageData {
     time_slots: DaySlots[]
 }
 
-const MONTHS = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
-]
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 function formatDate(dateStr: string): string {
-    const d = new Date(dateStr + 'T00:00:00')
+    const d = new Date(`${dateStr}T00:00:00`)
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const tomorrow = new Date(today)
     tomorrow.setDate(tomorrow.getDate() + 1)
 
-    const dayLabel = d.getTime() === today.getTime()
-        ? 'Today'
-        : d.getTime() === tomorrow.getTime()
-            ? 'Tomorrow'
-            : `${DAY_NAMES[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`
+    const dayLabel =
+        d.getTime() === today.getTime()
+            ? 'Today'
+            : d.getTime() === tomorrow.getTime()
+              ? 'Tomorrow'
+              : `${DAY_NAMES[d.getDay()]}, ${MONTHS[d.getMonth()]} ${d.getDate()}`
 
     return dayLabel
 }
@@ -164,11 +155,19 @@ export default function PublicBookPage() {
         return (
             <View className="flex-1 bg-background items-center justify-center p-6 gap-4">
                 <Text style={{ fontSize: 48 }}>✓</Text>
-                <Text style={{ color: '#22c55e', fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
+                <Text
+                    style={{
+                        color: '#22c55e',
+                        fontSize: 20,
+                        fontWeight: '600',
+                        textAlign: 'center',
+                    }}
+                >
                     Booking Confirmed!
                 </Text>
                 <Text style={{ color: '#6b7280', fontSize: 14, textAlign: 'center' }}>
-                    {data.page_name} — {selectedSlot && formatDate(selectedSlot.start.split('T')[0])} at{' '}
+                    {data.page_name} —{' '}
+                    {selectedSlot && formatDate(selectedSlot.start.split('T')[0])} at{' '}
                     {selectedSlot && formatTime(selectedSlot.start)}
                 </Text>
                 <Pressable
@@ -178,7 +177,10 @@ export default function PublicBookPage() {
                     }}
                     className="bg-primary px-6 py-3 rounded-xl mt-4"
                 >
-                    <Text className="text-primary-foreground" style={{ fontSize: 14, fontWeight: '600' }}>
+                    <Text
+                        className="text-primary-foreground"
+                        style={{ fontSize: 14, fontWeight: '600' }}
+                    >
                         Book Another
                     </Text>
                 </Pressable>
@@ -206,7 +208,13 @@ export default function PublicBookPage() {
 
                             {data.slot_types.length > 1 && (
                                 <View className="gap-2">
-                                    <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '600' }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            color: '#6b7280',
+                                            fontWeight: '600',
+                                        }}
+                                    >
                                         APPOINTMENT TYPE
                                     </Text>
                                     <View className="flex-row flex-wrap gap-2">
@@ -224,7 +232,10 @@ export default function PublicBookPage() {
                                                     style={{
                                                         fontSize: 14,
                                                         fontWeight: '500',
-                                                        color: selectedSlotType?.id === st.id ? '#fff' : '#111827',
+                                                        color:
+                                                            selectedSlotType?.id === st.id
+                                                                ? '#fff'
+                                                                : '#111827',
                                                     }}
                                                 >
                                                     {st.name}
@@ -232,7 +243,10 @@ export default function PublicBookPage() {
                                                 <Text
                                                     style={{
                                                         fontSize: 12,
-                                                        color: selectedSlotType?.id === st.id ? '#e0e7ff' : '#6b7280',
+                                                        color:
+                                                            selectedSlotType?.id === st.id
+                                                                ? '#e0e7ff'
+                                                                : '#6b7280',
                                                     }}
                                                 >
                                                     {st.duration_minutes}m
@@ -245,11 +259,18 @@ export default function PublicBookPage() {
 
                             {data.slot_types.length === 1 && selectedSlotType && (
                                 <View className="gap-2">
-                                    <Text style={{ fontSize: 13, color: '#6b7280', fontWeight: '600' }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 13,
+                                            color: '#6b7280',
+                                            fontWeight: '600',
+                                        }}
+                                    >
                                         APPOINTMENT TYPE
                                     </Text>
                                     <Text style={{ fontSize: 15, color: '#111827' }}>
-                                        {selectedSlotType.name} ({selectedSlotType.duration_minutes}m)
+                                        {selectedSlotType.name} ({selectedSlotType.duration_minutes}
+                                        m)
                                     </Text>
                                 </View>
                             )}
@@ -268,7 +289,13 @@ export default function PublicBookPage() {
 
                             {groupedSlots.map(day => (
                                 <View key={day.date} className="gap-2">
-                                    <Text style={{ fontSize: 14, fontWeight: '600', color: '#111827' }}>
+                                    <Text
+                                        style={{
+                                            fontSize: 14,
+                                            fontWeight: '600',
+                                            color: '#111827',
+                                        }}
+                                    >
                                         {formatDate(day.date)}
                                     </Text>
                                     <View className="flex-row flex-wrap gap-2">
@@ -298,10 +325,7 @@ export default function PublicBookPage() {
                     {step === 'form' && selectedSlot && (
                         <>
                             <View className="py-6 gap-1">
-                                <Pressable
-                                    onPress={() => setStep('pick')}
-                                    className="mb-4"
-                                >
+                                <Pressable onPress={() => setStep('pick')} className="mb-4">
                                     <Text style={{ fontSize: 14, color: '#2563eb' }}>
                                         ← Back to times
                                     </Text>
@@ -317,7 +341,9 @@ export default function PublicBookPage() {
 
                             <View className="gap-3">
                                 <View>
-                                    <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>
+                                    <Text
+                                        style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}
+                                    >
                                         Name
                                     </Text>
                                     <TextInput
@@ -330,7 +356,9 @@ export default function PublicBookPage() {
                                     />
                                 </View>
                                 <View>
-                                    <Text style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}>
+                                    <Text
+                                        style={{ fontSize: 13, color: '#6b7280', marginBottom: 4 }}
+                                    >
                                         Email
                                     </Text>
                                     <TextInput

@@ -1,7 +1,4 @@
-import {
-    SidebarItem,
-    SidebarNav,
-} from '@tinycld/core/components/sidebar-primitives'
+import { SidebarItem, SidebarNav } from '@tinycld/core/components/sidebar-primitives'
 import { useOrgHref } from '@tinycld/core/lib/org-routes'
 import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
@@ -18,10 +15,7 @@ export default function CalendarSlotsSidebar() {
     const [pagesCollection] = useStore('booking_pages')
     const openDialog = useBookingPageDialogStore(s => s.open)
 
-    const { data: pages } = useOrgLiveQuery(
-        (query, _org) => query.from({ p: pagesCollection }),
-        []
-    )
+    const { data: pages } = useOrgLiveQuery((query, _org) => query.from({ p: pagesCollection }), [])
 
     const isAllPagesActive =
         pathname.endsWith('/calendar-slots') || pathname.endsWith('/calendar-slots/')
@@ -46,11 +40,7 @@ export default function CalendarSlotsSidebar() {
                 />
             ))}
 
-            <SidebarItem
-                label="New booking page"
-                icon={Plus}
-                onPress={() => openDialog()}
-            />
+            <SidebarItem label="New booking page" icon={Plus} onPress={() => openDialog()} />
         </SidebarNav>
     )
 }

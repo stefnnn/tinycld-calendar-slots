@@ -1,16 +1,22 @@
 import { mutation, useMutation } from '@tinycld/core/lib/mutations'
-import { newRecordId } from 'pbtsdb/core'
 import { useStore } from '@tinycld/core/lib/pocketbase'
-import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
+import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { PlainInput } from '@tinycld/core/ui/PlainInput'
 import { Plus, Trash2 } from 'lucide-react-native'
+import { newRecordId } from 'pbtsdb/core'
 import { useState } from 'react'
 import { Pressable, Text, View } from 'react-native'
 
 const COLORS = [
-    '#3b82f6', '#22c55e', '#ef4444', '#f59e0b',
-    '#8b5cf6', '#ec4899', '#06b6d4', '#14b8a6',
+    '#3b82f6',
+    '#22c55e',
+    '#ef4444',
+    '#f59e0b',
+    '#8b5cf6',
+    '#ec4899',
+    '#06b6d4',
+    '#14b8a6',
 ]
 
 interface SlotTypeEditorProps {
@@ -31,8 +37,7 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
     const [color, setColor] = useState(COLORS[0])
 
     const { data: slotTypes } = useOrgLiveQuery(
-        (query, _org) =>
-            query.from({ s: slotTypesCollection }),
+        (query, _org) => query.from({ s: slotTypesCollection }),
         [pageId]
     )
 
@@ -85,7 +90,12 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                 >
                     <View className="flex-row items-center gap-3">
                         <View
-                            style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: st.color }}
+                            style={{
+                                width: 12,
+                                height: 12,
+                                borderRadius: 6,
+                                backgroundColor: st.color,
+                            }}
                         />
                         <View>
                             <Text style={{ color: fg, fontSize: 14, fontWeight: '600' }}>
@@ -97,10 +107,7 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                             </Text>
                         </View>
                     </View>
-                    <Pressable
-                        onPress={() => deleteMutation.mutate(st.id)}
-                        className="p-2"
-                    >
+                    <Pressable onPress={() => deleteMutation.mutate(st.id)} className="p-2">
                         <Trash2 size={16} color="#ef4444" />
                     </Pressable>
                 </View>
@@ -122,7 +129,9 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
 
                     <View className="flex-row gap-3">
                         <View className="flex-1">
-                            <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>Duration (min)</Text>
+                            <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>
+                                Duration (min)
+                            </Text>
                             <View className="flex-row gap-1.5">
                                 {[15, 30, 45, 60].map(d => {
                                     const selected = duration === String(d)
@@ -131,11 +140,20 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                                             key={d}
                                             onPress={() => setDuration(String(d))}
                                             className={`px-2.5 py-1 rounded-md border items-center justify-center ${selected ? 'bg-primary' : ''}`}
-                                            style={{ borderColor: selected ? primaryColor : borderColor }}
+                                            style={{
+                                                borderColor: selected ? primaryColor : borderColor,
+                                            }}
                                         >
                                             <Text
-                                                className={selected ? 'text-primary-foreground' : 'text-foreground'}
-                                                style={{ fontSize: 13, fontWeight: selected ? '600' : '400' }}
+                                                className={
+                                                    selected
+                                                        ? 'text-primary-foreground'
+                                                        : 'text-foreground'
+                                                }
+                                                style={{
+                                                    fontSize: 13,
+                                                    fontWeight: selected ? '600' : '400',
+                                                }}
                                             >
                                                 {d}
                                             </Text>
@@ -145,7 +163,9 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                             </View>
                         </View>
                         <View className="flex-1">
-                            <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>Padding (min)</Text>
+                            <Text style={{ color: muted, fontSize: 12, marginBottom: 6 }}>
+                                Padding (min)
+                            </Text>
                             <View className="flex-row gap-1.5">
                                 {[0, 5, 10, 15, 30].map(p => {
                                     const selected = padding === String(p)
@@ -154,11 +174,20 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                                             key={p}
                                             onPress={() => setPadding(String(p))}
                                             className={`px-2.5 py-1 rounded-md border items-center justify-center ${selected ? 'bg-primary' : ''}`}
-                                            style={{ borderColor: selected ? primaryColor : borderColor }}
+                                            style={{
+                                                borderColor: selected ? primaryColor : borderColor,
+                                            }}
                                         >
                                             <Text
-                                                className={selected ? 'text-primary-foreground' : 'text-foreground'}
-                                                style={{ fontSize: 13, fontWeight: selected ? '600' : '400' }}
+                                                className={
+                                                    selected
+                                                        ? 'text-primary-foreground'
+                                                        : 'text-foreground'
+                                                }
+                                                style={{
+                                                    fontSize: 13,
+                                                    fontWeight: selected ? '600' : '400',
+                                                }}
                                             >
                                                 {p}
                                             </Text>
@@ -194,7 +223,10 @@ export function SlotTypeEditor({ pageId }: SlotTypeEditorProps) {
                             onPress={handleAdd}
                             className="bg-primary flex-1 py-2 rounded-lg items-center"
                         >
-                            <Text className="text-primary-foreground" style={{ fontSize: 14, fontWeight: '600' }}>
+                            <Text
+                                className="text-primary-foreground"
+                                style={{ fontSize: 14, fontWeight: '600' }}
+                            >
                                 {addMutation.isPending ? 'Adding...' : 'Add'}
                             </Text>
                         </Pressable>

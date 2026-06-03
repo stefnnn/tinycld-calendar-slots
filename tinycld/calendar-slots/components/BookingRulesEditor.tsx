@@ -63,7 +63,7 @@ export function BookingRulesEditor({ pageId, page }: BookingRulesEditorProps) {
 
     useEffect(() => {
         setRules(toRules(page))
-    }, [page.id])
+    }, [page.id, page])
 
     const saveMutation = useMutation({
         mutationFn: mutation(function* () {
@@ -74,7 +74,7 @@ export function BookingRulesEditor({ pageId, page }: BookingRulesEditorProps) {
                 draft.booking_date_from = rules.bookingDateFrom
                 draft.booking_date_to = rules.bookingDateTo
                 draft.max_bookings_count = rules.maxBookingsCount
-                draft.max_bookings_period = rules.maxBookingsPeriod as any
+                draft.max_bookings_period = rules.maxBookingsPeriod as 'day' | 'week' | 'month'
             })
         }),
         onSuccess: () => {
@@ -83,11 +83,7 @@ export function BookingRulesEditor({ pageId, page }: BookingRulesEditorProps) {
         },
     })
 
-    function chip(
-        label: string,
-        selected: boolean,
-        onPress: () => void,
-    ) {
+    function chip(label: string, selected: boolean, onPress: () => void) {
         return (
             <Pressable
                 key={label}
@@ -112,140 +108,164 @@ export function BookingRulesEditor({ pageId, page }: BookingRulesEditorProps) {
                 className="flex-row items-center justify-between"
             >
                 <Text style={{ color: fg, fontSize: 18, fontWeight: '600' }}>Booking Rules</Text>
-                {expanded
-                    ? <ChevronDown size={18} color={muted} />
-                    : <ChevronRight size={18} color={muted} />
-                }
+                {expanded ? (
+                    <ChevronDown size={18} color={muted} />
+                ) : (
+                    <ChevronRight size={18} color={muted} />
+                )}
             </Pressable>
 
-            {!expanded && (
-                <Text style={{ color: muted, fontSize: 13 }}>
-                    {summaryText(rules)}
-                </Text>
-            )}
+            {!expanded && <Text style={{ color: muted, fontSize: 13 }}>{summaryText(rules)}</Text>}
 
-            {expanded && <View className="gap-5">
-            {/* Min notice */}
-            <View className="gap-2">
-                <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>MINIMUM NOTICE</Text>
-                <View className="flex-row flex-wrap gap-1.5">
-                    {MIN_NOTICE_OPTIONS.map(opt =>
-                        chip(opt.label, rules.minNoticeHours === opt.hours, () =>
-                            setRules(r => ({ ...r, minNoticeHours: opt.hours }))
-                        )
+            {expanded && (
+                <View className="gap-5">
+                    {/* Min notice */}
+                    <View className="gap-2">
+                        <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>
+                            MINIMUM NOTICE
+                        </Text>
+                        <View className="flex-row flex-wrap gap-1.5">
+                            {MIN_NOTICE_OPTIONS.map(opt =>
+                                chip(opt.label, rules.minNoticeHours === opt.hours, () =>
+                                    setRules(r => ({ ...r, minNoticeHours: opt.hours }))
+                                )
+                            )}
+                        </View>
+                    </View>
+
+                    {/* Booking window */}
+                    <View className="gap-2">
+                        <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>
+                            BOOKING WINDOW
+                        </Text>
+                        <View className="flex-row gap-1.5">
+                            {(['infinite', 'rolling', 'range'] as BookingWindow[]).map(w =>
+                                chip(
+                                    w === 'infinite'
+                                        ? 'Infinite'
+                                        : w === 'rolling'
+                                          ? 'Rolling'
+                                          : 'Specific dates',
+                                    rules.bookingWindow === w,
+                                    () => setRules(r => ({ ...r, bookingWindow: w }))
+                                )
+                            )}
+                        </View>
+
+                        {rules.bookingWindow === 'rolling' && (
+                            <View className="flex-row items-center gap-2 mt-1">
+                                <Text style={{ color: fg, fontSize: 13 }}>Up to</Text>
+                                <PlainInput
+                                    value={String(rules.bookingRollingDays)}
+                                    onChangeText={v => {
+                                        const n = parseInt(v, 10)
+                                        if (!Number.isNaN(n) && n > 0)
+                                            setRules(r => ({ ...r, bookingRollingDays: n }))
+                                    }}
+                                    keyboardType="number-pad"
+                                    placeholderTextColor={placeholderColor}
+                                    className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
+                                    style={{ width: 64 }}
+                                />
+                                <Text style={{ color: fg, fontSize: 13 }}>days in advance</Text>
+                            </View>
+                        )}
+
+                        {rules.bookingWindow === 'range' && (
+                            <View className="flex-row items-center gap-2 mt-1 flex-wrap">
+                                <Text style={{ color: fg, fontSize: 13 }}>From</Text>
+                                <PlainInput
+                                    value={rules.bookingDateFrom}
+                                    onChangeText={v =>
+                                        setRules(r => ({ ...r, bookingDateFrom: v }))
+                                    }
+                                    placeholder="YYYY-MM-DD"
+                                    placeholderTextColor={placeholderColor}
+                                    className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
+                                    style={{ width: 120 }}
+                                />
+                                <Text style={{ color: fg, fontSize: 13 }}>to</Text>
+                                <PlainInput
+                                    value={rules.bookingDateTo}
+                                    onChangeText={v => setRules(r => ({ ...r, bookingDateTo: v }))}
+                                    placeholder="YYYY-MM-DD"
+                                    placeholderTextColor={placeholderColor}
+                                    className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
+                                    style={{ width: 120 }}
+                                />
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Max bookings */}
+                    <View className="gap-2">
+                        <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>
+                            MAX BOOKINGS
+                        </Text>
+                        <View className="flex-row gap-1.5">
+                            {chip('No limit', rules.maxBookingsPeriod === '', () =>
+                                setRules(r => ({ ...r, maxBookingsPeriod: '' }))
+                            )}
+                            {(['day', 'week', 'month'] as MaxPeriod[]).map(p =>
+                                chip(`Per ${p}`, rules.maxBookingsPeriod === p, () =>
+                                    setRules(r => ({ ...r, maxBookingsPeriod: p }))
+                                )
+                            )}
+                        </View>
+
+                        {rules.maxBookingsPeriod !== '' && (
+                            <View className="flex-row items-center gap-2 mt-1">
+                                <Text style={{ color: fg, fontSize: 13 }}>Max</Text>
+                                <PlainInput
+                                    value={
+                                        rules.maxBookingsCount > 0
+                                            ? String(rules.maxBookingsCount)
+                                            : ''
+                                    }
+                                    onChangeText={v => {
+                                        const n = parseInt(v, 10)
+                                        setRules(r => ({
+                                            ...r,
+                                            maxBookingsCount: Number.isNaN(n) ? 0 : n,
+                                        }))
+                                    }}
+                                    keyboardType="number-pad"
+                                    placeholder="e.g. 5"
+                                    placeholderTextColor={placeholderColor}
+                                    className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
+                                    style={{ width: 64 }}
+                                />
+                                <Text style={{ color: fg, fontSize: 13 }}>
+                                    per {rules.maxBookingsPeriod}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+
+                    <Pressable
+                        onPress={() => saveMutation.mutate()}
+                        className="bg-primary px-6 py-3 rounded-xl items-center"
+                    >
+                        <Text
+                            className="text-primary-foreground"
+                            style={{ fontSize: 15, fontWeight: '600' }}
+                        >
+                            {saveMutation.isPending ? 'Saving…' : 'Save Rules'}
+                        </Text>
+                    </Pressable>
+
+                    {saved && (
+                        <Text style={{ color: '#22c55e', fontSize: 14, textAlign: 'center' }}>
+                            Saved!
+                        </Text>
+                    )}
+                    {saveMutation.error && (
+                        <Text style={{ color: '#ef4444', fontSize: 13, textAlign: 'center' }}>
+                            {String(saveMutation.error)}
+                        </Text>
                     )}
                 </View>
-            </View>
-
-            {/* Booking window */}
-            <View className="gap-2">
-                <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>BOOKING WINDOW</Text>
-                <View className="flex-row gap-1.5">
-                    {(['infinite', 'rolling', 'range'] as BookingWindow[]).map(w =>
-                        chip(
-                            w === 'infinite' ? 'Infinite' : w === 'rolling' ? 'Rolling' : 'Specific dates',
-                            rules.bookingWindow === w,
-                            () => setRules(r => ({ ...r, bookingWindow: w })),
-                        )
-                    )}
-                </View>
-
-                {rules.bookingWindow === 'rolling' && (
-                    <View className="flex-row items-center gap-2 mt-1">
-                        <Text style={{ color: fg, fontSize: 13 }}>Up to</Text>
-                        <PlainInput
-                            value={String(rules.bookingRollingDays)}
-                            onChangeText={v => {
-                                const n = parseInt(v, 10)
-                                if (!isNaN(n) && n > 0) setRules(r => ({ ...r, bookingRollingDays: n }))
-                            }}
-                            keyboardType="number-pad"
-                            placeholderTextColor={placeholderColor}
-                            className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
-                            style={{ width: 64 }}
-                        />
-                        <Text style={{ color: fg, fontSize: 13 }}>days in advance</Text>
-                    </View>
-                )}
-
-                {rules.bookingWindow === 'range' && (
-                    <View className="flex-row items-center gap-2 mt-1 flex-wrap">
-                        <Text style={{ color: fg, fontSize: 13 }}>From</Text>
-                        <PlainInput
-                            value={rules.bookingDateFrom}
-                            onChangeText={v => setRules(r => ({ ...r, bookingDateFrom: v }))}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={placeholderColor}
-                            className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
-                            style={{ width: 120 }}
-                        />
-                        <Text style={{ color: fg, fontSize: 13 }}>to</Text>
-                        <PlainInput
-                            value={rules.bookingDateTo}
-                            onChangeText={v => setRules(r => ({ ...r, bookingDateTo: v }))}
-                            placeholder="YYYY-MM-DD"
-                            placeholderTextColor={placeholderColor}
-                            className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
-                            style={{ width: 120 }}
-                        />
-                    </View>
-                )}
-            </View>
-
-            {/* Max bookings */}
-            <View className="gap-2">
-                <Text style={{ color: muted, fontSize: 12, fontWeight: '600' }}>MAX BOOKINGS</Text>
-                <View className="flex-row gap-1.5">
-                    {chip('No limit', rules.maxBookingsPeriod === '', () =>
-                        setRules(r => ({ ...r, maxBookingsPeriod: '' }))
-                    )}
-                    {(['day', 'week', 'month'] as MaxPeriod[]).map(p =>
-                        chip(
-                            `Per ${p}`,
-                            rules.maxBookingsPeriod === p,
-                            () => setRules(r => ({ ...r, maxBookingsPeriod: p })),
-                        )
-                    )}
-                </View>
-
-                {rules.maxBookingsPeriod !== '' && (
-                    <View className="flex-row items-center gap-2 mt-1">
-                        <Text style={{ color: fg, fontSize: 13 }}>Max</Text>
-                        <PlainInput
-                            value={rules.maxBookingsCount > 0 ? String(rules.maxBookingsCount) : ''}
-                            onChangeText={v => {
-                                const n = parseInt(v, 10)
-                                setRules(r => ({ ...r, maxBookingsCount: isNaN(n) ? 0 : n }))
-                            }}
-                            keyboardType="number-pad"
-                            placeholder="e.g. 5"
-                            placeholderTextColor={placeholderColor}
-                            className="border border-border rounded-lg px-3 py-2 text-base text-foreground bg-background"
-                            style={{ width: 64 }}
-                        />
-                        <Text style={{ color: fg, fontSize: 13 }}>per {rules.maxBookingsPeriod}</Text>
-                    </View>
-                )}
-            </View>
-
-            <Pressable
-                onPress={() => saveMutation.mutate()}
-                className="bg-primary px-6 py-3 rounded-xl items-center"
-            >
-                <Text className="text-primary-foreground" style={{ fontSize: 15, fontWeight: '600' }}>
-                    {saveMutation.isPending ? 'Saving…' : 'Save Rules'}
-                </Text>
-            </Pressable>
-
-            {saved && (
-                <Text style={{ color: '#22c55e', fontSize: 14, textAlign: 'center' }}>Saved!</Text>
             )}
-            {saveMutation.error && (
-                <Text style={{ color: '#ef4444', fontSize: 13, textAlign: 'center' }}>
-                    {String(saveMutation.error)}
-                </Text>
-            )}
-            </View>}
         </View>
     )
 }

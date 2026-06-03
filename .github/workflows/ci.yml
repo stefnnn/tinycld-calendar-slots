@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
-      # 3. Assemble the workspace root: writes package.json + tinycld.packages.ts
+      # 3. Assemble the workspace root: writes package.json + pnpm-workspace.yaml
       #    from bootstrap's embedded templates, clones app + core (+ calendar,
       #    which calendar-slots contributes a sidebar entry to) as siblings. The
       #    PR's PACKAGE dir is already there and is skipped.
@@ -44,10 +44,10 @@ jobs:
           go-version-file: ws/.go-version
       - name: Install (workspace root)
         working-directory: ws
-        run: npm install
+        run: corepack enable && pnpm install --no-frozen-lockfile
       - name: Typecheck + unit
         working-directory: ws/${{ env.PACKAGE }}
-        run: npx tinycld-pkg check
+        run: pnpm exec tinycld-pkg check
 
   e2e:
     name: E2E
@@ -73,7 +73,7 @@ jobs:
           go-version-file: ws/.go-version
       - name: Install (workspace root)
         working-directory: ws
-        run: npm install
+        run: corepack enable && pnpm install --no-frozen-lockfile
       # Installs watchman so Metro's file watcher doesn't fall back to
       # polling — see tinycld/app#21 for the trace evidence and the
       # blank-page-after-reload flake it fixed.
@@ -81,12 +81,12 @@ jobs:
         uses: tinycld/app/.github/actions/configure-test-env@main
       - name: Install Playwright browsers
         working-directory: ws/app
-        run: npx playwright install --with-deps chromium
+        run: pnpm exec playwright install --with-deps chromium
       - name: E2E
         working-directory: ws/${{ env.PACKAGE }}
         env:
           TINYCLD_WARM_PACKAGES: calendar-slots
-        run: npx tinycld-pkg test:e2e
+        run: pnpm exec tinycld-pkg test:e2e
       # Capture Playwright's per-failure artifacts (trace, screenshot,
       # video, error-context.md) so a CI failure can be diagnosed
       # without a re-run. `if: failure()` skips the upload on green
