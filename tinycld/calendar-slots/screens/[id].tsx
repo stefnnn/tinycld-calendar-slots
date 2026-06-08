@@ -2,7 +2,7 @@ import { mutation, useMutation } from '@tinycld/core/lib/mutations'
 import { useOrgHref } from '@tinycld/core/lib/org-routes'
 import { useStore } from '@tinycld/core/lib/pocketbase'
 import { useThemeColor } from '@tinycld/core/lib/use-app-theme'
-import { useCurrentUserOrg } from '@tinycld/core/lib/use-current-user-org'
+import { useCurrentRole } from '@tinycld/core/lib/use-current-role'
 import { useOrgInfo } from '@tinycld/core/lib/use-org-info'
 import { useOrgLiveQuery } from '@tinycld/core/lib/use-org-live-query'
 import { useOrgSlug } from '@tinycld/core/lib/use-org-slug'
@@ -33,7 +33,7 @@ export default function BookingPageEdit() {
     const orgHref = useOrgHref()
     const orgSlug = useOrgSlug()
     const { orgId } = useOrgInfo()
-    const userOrg = useCurrentUserOrg(orgSlug)
+    const { userOrgId } = useCurrentRole()
     const [pagesCollection] = useStore('booking_pages')
     const [_slotTypesCollection] = useStore('booking_slot_types')
     const [_availabilityCollection] = useStore('booking_availability')
@@ -85,12 +85,12 @@ export default function BookingPageEdit() {
             active: boolean
         }) {
             if (isNew) {
-                if (!orgId || !userOrg) throw new Error('No organization context')
+                if (!orgId || !userOrgId) throw new Error('No organization context')
                 yield pagesCollection.insert({
                     id: newRecordId(),
                     ...data,
                     org: orgId,
-                    owner: userOrg.id,
+                    owner: userOrgId,
                     min_notice_hours: 0,
                     booking_window: 'infinite',
                     booking_rolling_days: 0,

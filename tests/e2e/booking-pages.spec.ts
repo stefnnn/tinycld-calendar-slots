@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { login, navigateToPackage, ORG_SLUG } from '../../../app/tests/e2e/helpers'
+import { login, navigateToPackage, ORG_SLUG } from '@tinycld/core/e2e-helpers'
 
 // calendar-slots has no rail entry of its own: booking pages are managed
 // through a contribution in the calendar package's sidebar, which opens the

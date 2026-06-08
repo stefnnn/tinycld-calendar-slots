@@ -18,24 +18,18 @@ jobs:
     name: Typecheck & Unit
     runs-on: ubuntu-latest
     steps:
-      # 1. This PR's code, checked out into the member slot.
+      # This PR's code, checked out into its member slot. The workspace root is
+      # not a committed repo — bootstrap assembles it from scratch around this
+      # checkout. `--assemble-only` clones the `tinycld` member (app shell + core
+      # + package-scripts) plus calendar (which calendar-slots contributes a
+      # sidebar entry to), skipping PACKAGE's slot since it's already present,
+      # so CI tests this PR's code.
       - uses: actions/checkout@v5
         with:
           path: ws/${{ env.PACKAGE }}
-      # 2. Pin a Node that satisfies bootstrap's engines.node (>=24) so the
-      #    assemble step below doesn't depend on whatever ubuntu-latest ships.
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '24'
-      # 3. Assemble the workspace root: writes package.json + pnpm-workspace.yaml
-      #    from bootstrap's embedded templates, clones app + core (+ calendar,
-      #    which calendar-slots contributes a sidebar entry to) as siblings. The
-      #    PR's PACKAGE dir is already there and is skipped.
       - name: Assemble workspace (app + core + calendar)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
-      # 4. Now switch to the version the assembled workspace pins (ws/.node-version
-      #    is written by the assemble step above).
       - uses: actions/setup-node@v5
         with:
           node-version-file: ws/.node-version
@@ -56,15 +50,9 @@ jobs:
       - uses: actions/checkout@v5
         with:
           path: ws/${{ env.PACKAGE }}
-      # Pin a Node that satisfies bootstrap's engines.node (>=24) so the
-      # assemble step below doesn't depend on whatever ubuntu-latest ships.
-      - uses: actions/setup-node@v5
-        with:
-          node-version: '24'
       - name: Assemble workspace (app + core + calendar)
         working-directory: ws
         run: TINYCLD_REPO_BASE=https://github.com/tinycld npx @tinycld/bootstrap@latest --assemble-only --with calendar
-      # Switch to the version the assembled workspace pins.
       - uses: actions/setup-node@v5
         with:
           node-version-file: ws/.node-version
@@ -78,14 +66,14 @@ jobs:
       # polling — see tinycld/app#21 for the trace evidence and the
       # blank-page-after-reload flake it fixed.
       - name: Configure test env
-        uses: tinycld/app/.github/actions/configure-test-env@main
+        uses: ./ws/tinycld/.github/actions/configure-test-env
       - name: Install Playwright browsers
-        working-directory: ws/app
+        working-directory: ws/tinycld
         run: pnpm exec playwright install --with-deps chromium
       - name: E2E
         working-directory: ws/${{ env.PACKAGE }}
         env:
-          TINYCLD_WARM_PACKAGES: calendar-slots
+          TINYCLD_WARM_PACKAGES: calendar
         run: pnpm exec tinycld-pkg test:e2e
       # Capture Playwright's per-failure artifacts (trace, screenshot,
       # video, error-context.md) so a CI failure can be diagnosed
@@ -93,7 +81,7 @@ jobs:
       # runs to save bandwidth + retention.
       - name: Upload Playwright artifacts
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-artifacts
           path: |

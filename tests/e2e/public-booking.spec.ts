@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { ORG_SLUG } from '../../../app/tests/e2e/helpers'
+import { ORG_SLUG } from '@tinycld/core/e2e-helpers'
 
 test.describe('Calendar Slots — Public Booking Page', () => {
     test('renders page name and slot types', async ({ page }) => {

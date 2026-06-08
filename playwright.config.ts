@@ -1,6 +1,6 @@
 import path from 'node:path'
 import { defineConfig } from '@playwright/test'
-import appConfig from '../app/playwright.config'
+import appConfig from '@tinycld/core/playwright-config'
 
 // Package-scoped Playwright: inherit the app shell's webServer + browser config,
 // then point testDir at THIS package's tests/e2e through the app shell's
@@ -17,9 +17,11 @@ const TEST_DIR = path.join(WS_ROOT, 'node_modules', '@tinycld', 'calendar-slots'
 export default defineConfig({
     ...appConfig,
     testDir: TEST_DIR,
-    // The first hit to a route triggers on-demand Metro bundling that can
-    // exceed the default 5s expect timeout on a cold CI run; later tests reuse
-    // the warm bundle. Give assertions more room so the first spec per route
-    // isn't a cold-start casualty.
+    // The calendar sidebar is a lazily-compiled Metro chunk. Even with the
+    // TINYCLD_WARM_PACKAGES=calendar global-setup pre-warm, a slow CI runner
+    // can still be in mid-compile when the first test reaches navigateToPackage.
+    // 90s gives enough headroom for the cold-start path without burning CI
+    // budget on fast runs (which finish in <10s with a warm cache).
+    timeout: 90_000,
     expect: { timeout: 15_000 },
 })
