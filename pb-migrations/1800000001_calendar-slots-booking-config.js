@@ -59,13 +59,20 @@ migrate(
     },
     app => {
         const col = app.findCollectionByNameOrId('booking_pages')
+        // Remove by field id — the PocketBase JSVM FieldsList exposes removeById /
+        // removeByName, NOT a remove(field) method (that throws
+        // "Object has no member 'remove'", failing the whole uninstall/revert).
         const toRemove = [
-            'min_notice_hours', 'booking_window', 'booking_rolling_days',
-            'booking_date_from', 'booking_date_to', 'max_bookings_count', 'max_bookings_period',
+            'book_pages_min_notice',
+            'book_pages_bk_window',
+            'book_pages_bk_rolling',
+            'book_pages_bk_from',
+            'book_pages_bk_to',
+            'book_pages_max_count',
+            'book_pages_max_period',
         ]
-        for (const name of toRemove) {
-            const field = col.fields.getByName(name)
-            if (field) col.fields.remove(field)
+        for (const id of toRemove) {
+            col.fields.removeById(id)
         }
         app.save(col)
     }
